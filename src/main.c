@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <motor.h>
+#include "motor.h"
 
 
 volatile uint32_t counter = 10;
@@ -24,7 +24,7 @@ int main(void)
     uint32_t local_a = 3;
     uint32_t local_b = 4;
     uint32_t result;
-    Motor motor[6];
+    Motor motor[6] = {0};
     MotorInit(&motor[0],TIM2,GPIOA,2,GPIOB,3);
     MotorInit(&motor[1],TIM3,GPIOA,3,GPIOB,4);
     MotorInit(&motor[2],TIM4,GPIOA,4,GPIOB,5);
@@ -32,19 +32,4 @@ int main(void)
 
 
 
-
-
-    result = add(local_a, local_b);
-    increment(&counter);
-    counter += lookup[idx];
-
-    while(1)
-    {
-        total += result;
-        private_count++;
-    }
-
-    return 0;
 }
-
-

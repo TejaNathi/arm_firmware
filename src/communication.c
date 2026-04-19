@@ -1,14 +1,14 @@
 #include <stdint.h>
-#include <motor.h>
-#include<stm32f401xc.h>
+#include "motor.h"
+#include "stm32f4xx.h"
 //#include "motor.c"
 #define NSS 4
 #define PA2 2
 #define PA3 3
 #define SCK 5
 #define MOSI 6
-#define MISO 5
-
+#define MISO 6
+//working on this working wiht merge and all
 
 volatile char command_bytes[32];
 volatile int command_buffer;
@@ -45,7 +45,7 @@ void DMA1_Stream5_Init(void) {
 }
 
 
-void inti_USART(){
+void init_USART(void){
     RCC->APB1ENR |= (1<<17);   
     RCC->AHB1ENR |= (1<<0);   
     GPIOA->MODER &= ~(3 << (PA2*2));
@@ -81,14 +81,18 @@ void init_spi(){
 void USART2_IRQHandler(void) {
     if (USART2->SR & (1<<4)) {              // IDLE flag
         volatile uint32_t dummy = USART2->DR; // clear flag
+        (void)dummy;
 
         // stop DMA
         DMA1_Stream5->CR &= ~(1<<0);
 
         // calculate bytes received
-        bytes_received = 64 - DMA1_Stream5->NDTR;
-        command_bytes[bytes_received] = '\0'; 
-     command_buffer = 1;    
+        bytes_received = (uint8_t)(32U - DMA1_Stream5->NDTR);
+        if (bytes_received >= sizeof(command_bytes)) {
+            bytes_received = (uint8_t)(sizeof(command_bytes) - 1U);
+        }
+        command_bytes[bytes_received] = '\0';
+        command_buffer = 1;
                     // tell main loop
     }
 }
@@ -125,7 +129,7 @@ void SPI1_Init(void) {
     // 4. Configure CR1
     SPI1->CR1 = 0;                  // clear first
     SPI1->CR1 |= (3<<3);            // BR = fPCLK/16
-    SPI1->CR1 |= (1<<9);            // SSM
+    SPI1->CR1 |= (1<<10);            // SSM
     SPI1->CR1 |= (1<<8);            // SSI
     SPI1->CR1 |= (1<<2);            // MSTR
 

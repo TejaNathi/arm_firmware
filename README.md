@@ -47,10 +47,8 @@ src/
  ├── main.c
  ├── communication.c
  ├── motor.c
- ├── queue.c
 include/
- ├── motor.h
- ├── communication.h
+ └── README
 
 ---
 
