@@ -32,17 +32,4 @@ int main(void)
 
 
 
-
-
-    result = add(local_a, local_b);
-    increment(&counter);
-    counter += lookup[idx & 0x3U];
-
-    while(1)
-    {
-        total += result;
-        private_count++;
-    }
-
-    return 0;
 }

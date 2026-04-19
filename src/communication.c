@@ -8,7 +8,7 @@
 #define SCK 5
 #define MOSI 6
 #define MISO 6
-
+//working on this working wiht merge and all
 
 volatile char command_bytes[32];
 volatile int command_buffer;
@@ -129,7 +129,7 @@ void SPI1_Init(void) {
     // 4. Configure CR1
     SPI1->CR1 = 0;                  // clear first
     SPI1->CR1 |= (3<<3);            // BR = fPCLK/16
-    SPI1->CR1 |= (1<<9);            // SSM
+    SPI1->CR1 |= (1<<10);            // SSM
     SPI1->CR1 |= (1<<8);            // SSI
     SPI1->CR1 |= (1<<2);            // MSTR
 
