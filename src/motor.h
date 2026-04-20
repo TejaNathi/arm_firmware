@@ -38,7 +38,7 @@ void MotorInit(Motor *m,
                GPIO_TypeDef* dir_port,
                uint8_t dir_pin);
 void movemotor(Motor* m, int32_t angle, uint32_t start_arr, uint32_t target_arr);
-void executewaypoint(Motor motors[], waypoint* wp);
+void executewaypoint( waypoint* wp);
 void startmotors(void);
 uint8_t queuepush(const waypoint* wp);
 uint8_t queuepop(waypoint* wp);
