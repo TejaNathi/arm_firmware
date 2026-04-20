@@ -1,16 +1,15 @@
 #include <stdint.h>
-#include <motor.h>
-#include<stm32f401xc.h>
-//#include "motor.c"
+#include "stm32f4xx.h"
+#include "communication.h"
 #define NSS 4
 #define PA2 2
 #define PA3 3
 #define SCK 5
-#define MOSI 6
-#define MISO 5
+#define MOSI 7
+#define MISO 6
 
 
-volatile char command_bytes[32];
+volatile char command_bytes[UART_RX_BUF_SIZE];
 volatile int command_buffer;
 volatile uint8_t bytes_received=0;
 volatile uint8_t imu_data[13];
@@ -30,7 +29,7 @@ void DMA1_Stream5_Init(void) {
 
     DMA1_Stream5->PAR  = (uint32_t)&USART2->DR;
     DMA1_Stream5->M0AR = (uint32_t)command_bytes;
-    DMA1_Stream5->NDTR = 32;
+    DMA1_Stream5->NDTR = UART_RX_BUF_SIZE;
 
     DMA1_Stream5->CR = 0;
     DMA1_Stream5->CR |= (4<<25);       // channel 4
@@ -45,7 +44,7 @@ void DMA1_Stream5_Init(void) {
 }
 
 
-void inti_USART(){
+void init_USART(void){
     RCC->APB1ENR |= (1<<17);   
     RCC->AHB1ENR |= (1<<0);   
     GPIOA->MODER &= ~(3 << (PA2*2));
@@ -58,8 +57,9 @@ void inti_USART(){
     USART2->BRR = (22<<4) | 13;
     USART2->CR1 |= (1<<3);           // TE
     USART2->CR1 |= (1<<2);          
-    USART2->CR3 |= (1<<6);   
-    NVIC_EnableIRQ(USART2_IRQn)  ;      // DMAR ← new line
+    USART2->CR3 |= (1<<6);
+    USART2->CR1 |= (1<<4);           // IDLEIE
+    NVIC_EnableIRQ(USART2_IRQn);
     USART2->CR1 |= (1<<13); 
 };
 
@@ -68,7 +68,7 @@ void restart_dma_rx(void) {
     DMA1_Stream5->CR &= ~(1<<0);     
     while (DMA1_Stream5->CR & (1<<0));
     DMA1->HIFCR |= (1<<11);       
-    DMA1_Stream5->NDTR = 32;        
+    DMA1_Stream5->NDTR = UART_RX_BUF_SIZE;
     DMA1_Stream5->M0AR = (uint32_t)command_bytes;
     DMA1_Stream5->CR |= (1<<0); 
 }
@@ -80,15 +80,21 @@ void init_spi(){
 
 void USART2_IRQHandler(void) {
     if (USART2->SR & (1<<4)) {              // IDLE flag
+        volatile uint32_t sr = USART2->SR;
         volatile uint32_t dummy = USART2->DR; // clear flag
+        (void)sr;
+        (void)dummy;
 
         // stop DMA
         DMA1_Stream5->CR &= ~(1<<0);
 
         // calculate bytes received
-        bytes_received = 64 - DMA1_Stream5->NDTR;
-        command_bytes[bytes_received] = '\0'; 
-     command_buffer = 1;    
+        bytes_received = (uint8_t)(UART_RX_BUF_SIZE - DMA1_Stream5->NDTR);
+        if (bytes_received >= sizeof(command_bytes)) {
+            bytes_received = (uint8_t)(sizeof(command_bytes) - 1U);
+        }
+        command_bytes[bytes_received] = '\0';
+        command_buffer = 1;
                     // tell main loop
     }
 }
