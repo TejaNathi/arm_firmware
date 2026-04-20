@@ -6,7 +6,7 @@
 
 
 #include <stdint.h>
-#include "stm32f401xc.h"
+#include "stm32f4xx.h"
 
 typedef enum { MOVING, STOPPED } MotorState;
 
@@ -24,11 +24,10 @@ typedef struct {
 } Motor;
 
 typedef struct {
- int32_t angle[6]; //this is per joint we have 6 joint
- uint32_t start_arr[6];
- uint32_t target_arr[6];
-uint32_t time_ms;
-
+    int32_t angle[6]; // this is per joint we have 6 joints
+    uint32_t start_arr[6];
+    uint32_t target_arr[6];
+    uint32_t time_ms;
 } waypoint;
 
 // function declaration
@@ -38,8 +37,11 @@ void MotorInit(Motor *m,
                uint8_t step_pin,
                GPIO_TypeDef* dir_port,
                uint8_t dir_pin);
-void startmotors();
-uint8_t queuepush(waypoint* wp);
+void movemotor(Motor* m, int32_t angle, uint32_t start_arr, uint32_t target_arr);
+void executewaypoint(Motor motors[], waypoint* wp);
+void startmotors(void);
+uint8_t queuepush(const waypoint* wp);
 uint8_t queuepop(waypoint* wp);
+uint8_t parsecommand(char* cmd_buffer, waypoint* wp);
 
 #endif

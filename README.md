@@ -46,11 +46,11 @@ Stepper Drivers → Robotic Arm
 src/
  ├── main.c
  ├── communication.c
- ├── motor.c
- ├── queue.c
+ └── motor.c
 include/
- ├── motor.h
  ├── communication.h
+ ├── motor.h
+ └── README
 
 ---
 
